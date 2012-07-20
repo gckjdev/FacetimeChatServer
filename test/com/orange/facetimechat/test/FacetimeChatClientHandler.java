@@ -1,5 +1,6 @@
 package com.orange.facetimechat.test;
 
+import org.apache.cassandra.cli.CliParser.countStatement_return;
 import org.apache.log4j.Logger;
 import org.jboss.netty.channel.ChannelEvent;
 import org.jboss.netty.channel.ChannelHandler;
@@ -9,7 +10,7 @@ import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
-import com.orange.facetimechat.server.FacetimeChatHandler;
+import com.orange.facetimechat.server.FacetimeChatServerHandler;
 import com.orange.network.game.protocol.message.GameMessageProtos;
 import com.orange.network.game.protocol.message.GameMessageProtos.GameMessage;
 
@@ -42,9 +43,12 @@ public class FacetimeChatClientHandler extends SimpleChannelUpstreamHandler {
 	public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
 
 		GameMessage message = (GameMessageProtos.GameMessage) e.getMessage();
+		logger.info("<messageReceiver> = " + message);
 		switch (message.getCommand()) {
 		case FACETIME_CHAT_RESPONSE:
-			// TODO
+			if (message.getFacetimeChatResponse().getChosenToInitiate()) {
+				testService.simulateFacetimeStartRequest(message);
+			}
 			break;
 		}
 

@@ -1,5 +1,6 @@
 package com.orange.facetimechat.server;
 
+import org.antlr.grammar.v3.ANTLRv3Parser.finallyClause_return;
 import org.apache.log4j.Logger;
 import org.jboss.netty.channel.ChannelEvent;
 import org.jboss.netty.channel.ChannelHandler;
@@ -9,16 +10,19 @@ import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
+import com.orange.facetimechat.model.FacetimeUser;
+import com.orange.facetimechat.model.FacetimeUserManager;
 import com.orange.facetimechat.service.ChatMatchService;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameCommandType;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameResultCode;
 import com.orange.network.game.protocol.message.GameMessageProtos;
 import com.orange.network.game.protocol.message.GameMessageProtos.GameMessage;
 
-public class FacetimeChatHandler extends SimpleChannelUpstreamHandler {
+public class FacetimeChatServerHandler extends SimpleChannelUpstreamHandler {
 
-	private static final Logger logger = Logger.getLogger(FacetimeChatHandler.class
+	private static final Logger logger = Logger.getLogger(FacetimeChatServerHandler.class
 			.getName()); 
+	private final ChatMatchService chatMatchService = ChatMatchService.getInstance();
 	
 	@Override
 	public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e){
@@ -34,10 +38,11 @@ public class FacetimeChatHandler extends SimpleChannelUpstreamHandler {
 	@Override
 	public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
 				
-		GameMessage message = (GameMessageProtos.GameMessage)e.getMessage();		
+		GameMessage message = (GameMessageProtos.GameMessage)e.getMessage();	
+		logger.info("<messageReceived> " + message);
 		switch (message.getCommand()){
 			case FACETIME_CHAT_REQUEST:
-				ChatMatchService.getInstance().matchUserChatRequest(message);
+				ChatMatchService.getInstance().matchUserChatRequest(message, e.getChannel());
 				break;
 			case FACETIME_CHAT_START:
 				ChatMatchService.getInstance().userStartFacetime(message);
@@ -55,18 +60,23 @@ public class FacetimeChatHandler extends SimpleChannelUpstreamHandler {
 	@Override
 	public void channelDisconnected(ChannelHandlerContext ctx,
             ChannelStateEvent e){
+		chatMatchService.cleanUserOnChannel(e);
 		logger.info("<channelDisconnected> channel = " + e.getChannel().toString());
+	  	
 	}
 	
 	@Override
 	public void channelClosed(ChannelHandlerContext ctx,
             ChannelStateEvent e){
+		// In case of user canceling the connection after aplying for a match.
+		chatMatchService.cleanUserOnChannel(e);
 		logger.info("<channelClosed> channel = " + e.getChannel().toString());
 	}
 	
 	@Override
 	public void channelConnected(ChannelHandlerContext ctx,
             ChannelStateEvent e){
-		logger.info("<channelConnected> channel = " + e.getChannel().toString());		
+		logger.info("<channelConnected> channel = " + e.getChannel().toString());	
+
 	}	
 }

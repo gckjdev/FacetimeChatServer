@@ -21,7 +21,7 @@ public class FactimeChatServerPipelineFactory implements ChannelPipelineFactory 
 		p.addLast("frameEncoder", new LengthFieldPrepender(4));
 		p.addLast("protobufEncoder", new ProtobufEncoder());
 		 
-		p.addLast("handler", new FacetimeChatHandler());
+		p.addLast("handler", new FacetimeChatServerHandler());
 		return p;	
 	}
 

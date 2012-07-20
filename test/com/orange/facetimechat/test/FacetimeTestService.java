@@ -1,8 +1,17 @@
 package com.orange.facetimechat.test;
 
+import java.util.Map;
+import java.util.Random;
+
+import org.antlr.grammar.v3.ANTLRv3Parser.id_return;
+import org.apache.cassandra.cli.CliParser.countStatement_return;
+import org.apache.cassandra.cli.CliParser.newColumnFamily_return;
+import org.apache.cassandra.thrift.Cassandra.set_keyspace_args;
 import org.apache.log4j.Logger;
 import org.jboss.netty.channel.Channel;
+import org.omg.CORBA.PUBLIC_MEMBER;
 
+import com.orange.facetimechat.model.FacetimeUser;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameCommandType;
 import com.orange.network.game.protocol.message.GameMessageProtos.FacetimeChatRequest;
 import com.orange.network.game.protocol.message.GameMessageProtos.GameMessage;
@@ -24,8 +33,9 @@ public class FacetimeTestService {
 	
 	public void simulateMatchRequest(){
 		// send a user match request here
+		Random random = new Random();
 		PBGameUser user = PBGameUser.newBuilder()
-			.setUserId("test_user_1")
+			.setUserId("test_user_"+ random.nextInt(10000))
 			.setGender(true)
 			.setNickName("Jian Yu")
 			.build();			
@@ -45,12 +55,20 @@ public class FacetimeTestService {
 			logger.info("<simulateMatchRequest> send message="+message.toString());
 		}
 		else{
-			logger.info("<simulateMatchRequest> channel is null or not writable");
+			logger.info("<simulateMatchRequest> channel is null or not writable"
+					+ "Channel isBound: " + channel.isBound() + '\n'
+					+ "channel isConnected: " + channel.isConnected() +'\n'
+					+ "channel is isOpen: " + channel.isOpen());
 		}
 	}
 
-	public void simulateFacetimeStartRequest(){
+	
+
+	public void simulateFacetimeStartRequest(GameMessage message){
 		// send a start request
+		logger.info("<simulateFacetimeStartRequeset> start Facetime chatting !\n" +
+				"###[" + message.getUserId() + 
+				"  <-->  " + message.getFacetimeChatResponse().getUser(0).getUserId() + "]###");
 	}
 
 
