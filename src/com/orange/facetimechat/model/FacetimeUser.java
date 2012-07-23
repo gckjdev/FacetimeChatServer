@@ -2,6 +2,8 @@ package com.orange.facetimechat.model;
 
 import org.antlr.grammar.v3.ANTLRv3Parser.finallyClause_return;
 import org.antlr.grammar.v3.ANTLRv3Parser.range_return;
+import org.apache.cassandra.cli.CliParser.newColumnFamily_return;
+import org.apache.log4j.Logger;
 import org.jboss.netty.channel.Channel;
 
 import com.orange.network.game.protocol.model.GameBasicProtos.PBGameUser;
@@ -11,7 +13,7 @@ public class FacetimeUser {
 	public final static int WAIT_MATCHING = 1;
 	public final static int MATCHED = 2;
 	public final static int START_CHATTING = 3;
-
+	
 	final PBGameUser user;
 	volatile long lastRequestTime;
 	volatile int status;
@@ -43,7 +45,7 @@ public class FacetimeUser {
 		return status;
 	}
 
-	public void setStatus(int status) {
+	synchronized public void setStatus(int status) {
 		this.status = status;
 	}
 

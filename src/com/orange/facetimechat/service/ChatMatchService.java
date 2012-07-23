@@ -1,5 +1,7 @@
 package com.orange.facetimechat.service;
 
+import java.util.Map;
+
 import org.apache.cassandra.thrift.Cassandra.set_keyspace_args;
 import org.apache.log4j.Logger;
 import org.jboss.netty.channel.Channel;
@@ -43,7 +45,7 @@ public class ChatMatchService {
 	}
 
 	private void sendFacetimeResponse(FacetimeUser user,FacetimeUser matchedUser) {
-		// This synchronized block act as a superviser, who
+		// This synchronized block acts as a superviser, who
 		//  checks whether a response has sent. If yes,
 		//   then do noting,just return.
 		// * Use the first argument(user) to sychronize,
@@ -68,9 +70,9 @@ public class ChatMatchService {
 
 		Channel channel = user.getChannel();
 		if (channel != null && channel.isWritable()) {
-			// When sent user a response, we should 
+			// After sending user a response, we should 
 			// set it's status, this two actions should
-			// be do as a atomic action.
+			// be do as an atomic action.
 			synchronized (user) {
 				channel.write(message);
 				setSentFacetimeResponse(user);
@@ -94,21 +96,21 @@ public class ChatMatchService {
 		// Add the user into userManager's userList and pick a user to match.
 		synchronized (this) {
 			userManager.addUser(user);
-			logger.info(user + " is added to uerList,\n" + "now the userList is " +
-				userManager.getUserList().toString());
+			logger.info("<matchUserChatRequest>After adding: " + user + " is added to uerList,\n" + "now the userList is: " +
+				userManager.getUserList());
 		}
 		
 		matchedUser = userManager.findMatch(user);
 		if (matchedUser == null) {
 			logger
 					.info("<matchUserChatRequest> " + user +" not found a user, waiting...\n"
-					+ "the userList now is " + userManager.getUserList().toString());
+					+ "the userList now is: " + userManager.getUserList());
 			return;
 		}
 		logger
 				.info("<matchUserChatRequest> " + user + " found a match user： "
 						+ matchedUser + "\nthe userList now is: " 
-						+ userManager.getUserList().toString());
+						+ userManager.getUserList());
 
 		// Choose who to initiate the chatting.By default we choose the user.
 		chooseOnetoInitiate(user, matchedUser);
@@ -126,7 +128,7 @@ public class ChatMatchService {
 
 	private void chooseOnetoInitiate(FacetimeUser user, FacetimeUser matchedUser) {
 		// This is a default behaviour: the user is chosen !
-		// It is more fair to ramdomly choose one, but this may compromise
+		// It is more fair to randomly choose one, but this may compromise
 		// the perfermance(it is not quite nessesary)
 		user.setChosenToIntiate();
 	}
@@ -137,7 +139,7 @@ public class ChatMatchService {
 		FacetimeUser matchedUser = user.getMatchedUser();
 		user.setStatus(FacetimeUser.START_CHATTING);
 		matchedUser.setStatus(FacetimeUser.START_CHATTING);
-
+		
 		// We shall remove the user and the matchedUser from userList.
 		// Although we could not know the matchedUser's Facetime status,
 		// however since we have set both to START_CHATTING, it is useless to

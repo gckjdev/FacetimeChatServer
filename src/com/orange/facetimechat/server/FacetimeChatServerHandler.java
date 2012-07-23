@@ -1,20 +1,14 @@
 package com.orange.facetimechat.server;
 
-import org.antlr.grammar.v3.ANTLRv3Parser.finallyClause_return;
 import org.apache.log4j.Logger;
 import org.jboss.netty.channel.ChannelEvent;
-import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 
-import com.orange.facetimechat.model.FacetimeUser;
-import com.orange.facetimechat.model.FacetimeUserManager;
 import com.orange.facetimechat.service.ChatMatchService;
-import com.orange.network.game.protocol.constants.GameConstantsProtos.GameCommandType;
-import com.orange.network.game.protocol.constants.GameConstantsProtos.GameResultCode;
 import com.orange.network.game.protocol.message.GameMessageProtos;
 import com.orange.network.game.protocol.message.GameMessageProtos.GameMessage;
 
@@ -31,7 +25,8 @@ public class FacetimeChatServerHandler extends SimpleChannelUpstreamHandler {
 			logger.debug(e.toString());
 			super.handleUpstream(ctx, e);
 		} catch (Exception exception) {
-			logger.error("<handleUpstream> catch unexpected exception at " + e.getChannel().toString() + ", cause=", exception.getCause());			
+			logger.error("<handleUpstream> catch unexpected exception at " + e.getChannel().toString()
+					+ ", cause=", exception.getCause());			
 		}				
 	}
 	

@@ -35,7 +35,7 @@ public class FacetimeTestService {
 		// send a user match request here
 		Random random = new Random();
 		PBGameUser user = PBGameUser.newBuilder()
-			.setUserId("test_user_"+ random.nextInt(10000))
+			.setUserId("test_user_"+ random.nextInt(1000000))  // choose a big num to avoid collision
 			.setGender(true)
 			.setNickName("Jian Yu")
 			.build();			
@@ -55,7 +55,7 @@ public class FacetimeTestService {
 			logger.info("<simulateMatchRequest> send message="+message.toString());
 		}
 		else{
-			logger.info("<simulateMatchRequest> channel is null or not writable"
+			logger.info("<simulateMatchRequest> channel is null or not writable\n"
 					+ "Channel isBound: " + channel.isBound() + '\n'
 					+ "channel isConnected: " + channel.isConnected() +'\n'
 					+ "channel is isOpen: " + channel.isOpen());

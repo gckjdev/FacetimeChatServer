@@ -79,7 +79,7 @@ public class FacetimeChatClientHandler extends SimpleChannelUpstreamHandler {
 		logger
 				.info("<channelConnected> channel = "
 						+ e.getChannel().toString());
-		
+		logger.info("<channelConnected> channelStateEvent = " + e.toString());
 		testService.setChannel(e.getChannel());
 		testService.simulateMatchRequest();
 	}
