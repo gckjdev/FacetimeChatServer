@@ -55,10 +55,10 @@ public class FacetimeTestService {
 			logger.info("<simulateMatchRequest> send message="+message.toString());
 		}
 		else{
-			logger.info("<simulateMatchRequest> channel is null or not writable\n"
-					+ "Channel isBound: " + channel.isBound() + '\n'
-					+ "channel isConnected: " + channel.isConnected() +'\n'
-					+ "channel is isOpen: " + channel.isOpen());
+			logger.info("<simulateMatchRequest> channel is null or not writable\n");
+//					+ "Channel isBound: " + channel.isBound() + '\n'
+//					+ "channel isConnected: " + channel.isConnected() +'\n'
+//					+ "channel is isOpen: " + channel.isOpen());
 		}
 	}
 
@@ -70,6 +70,5 @@ public class FacetimeTestService {
 				"###[" + message.getUserId() + 
 				"  <-->  " + message.getFacetimeChatResponse().getUser(0).getUserId() + "]###");
 	}
-
 
 }

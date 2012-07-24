@@ -44,7 +44,7 @@ public class FacetimeUserManager {
 	
 	synchronized public FacetimeUser findMatch(FacetimeUser user) {
 		if (user.getStatus() == FacetimeUser.MATCHED) {
-			logger.info(user.getUser().getUserId() + " 's status is:" + user.getStatus() ); 
+//			logger.info(user.getUser().getUserId() + " 's status is:" + user.getStatus() ); 
 				return user.getMatchedUser();
 		}
 		else {
@@ -79,7 +79,7 @@ public class FacetimeUserManager {
 		return user;
 	}
 	
-	synchronized public String getUserList() {
+	synchronized public String getUserInMap() {
 		String resultString="";
 		
 		Iterator<Map.Entry<String, FacetimeUser>> iterator = userIdMap.entrySet().iterator();

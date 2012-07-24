@@ -7,17 +7,21 @@ import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
-
 import com.orange.facetimechat.service.ChatMatchService;
 import com.orange.network.game.protocol.message.GameMessageProtos;
 import com.orange.network.game.protocol.message.GameMessageProtos.GameMessage;
 
-public class FacetimeChatServerHandler extends SimpleChannelUpstreamHandler {
+public class FacetimeChatServerHandler extends SimpleChannelUpstreamHandler  {
 
 	private static final Logger logger = Logger.getLogger(FacetimeChatServerHandler.class
 			.getName()); 
 	private final ChatMatchService chatMatchService = ChatMatchService.getInstance();
 	
+	
+	private static final FacetimeChatServerHandler facetimeChatServerHandler = new FacetimeChatServerHandler();
+	public static FacetimeChatServerHandler getInstance() {
+		return facetimeChatServerHandler;
+	}
 	@Override
 	public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e){
 		
@@ -72,6 +76,7 @@ public class FacetimeChatServerHandler extends SimpleChannelUpstreamHandler {
 	public void channelConnected(ChannelHandlerContext ctx,
             ChannelStateEvent e){
 		logger.info("<channelConnected> channel = " + e.getChannel().toString());	
-
 	}	
+	
+	
 }

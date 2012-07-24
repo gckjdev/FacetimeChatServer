@@ -19,10 +19,9 @@ class StartFacetimeChatTestClient {
 	public StartFacetimeChatTestClient() {
 		// Parse options.
         String host = "127.0.0.1";
-        int port = 9800;
+        int port = 8191;
         // Configure the client.
         
-        // Let's simulate many users issuing FacetimeChatRequest!
         ClientBootstrap bootstrap = new ClientBootstrap(
                 new NioClientSocketChannelFactory(
                         Executors.newCachedThreadPool(),
@@ -61,7 +60,7 @@ public class FacetimeChatTestClientThread extends Thread {
 		
 	public static void main(String[] args) {
 		
-		for (int i = 0; i < 151; i++)
+		for (int i = 0; i < 5; i++)
 			new FacetimeChatTestClientThread();
 
 	}

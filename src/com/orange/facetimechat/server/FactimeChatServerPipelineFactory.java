@@ -7,21 +7,40 @@ import org.jboss.netty.handler.codec.frame.LengthFieldBasedFrameDecoder;
 import org.jboss.netty.handler.codec.frame.LengthFieldPrepender;
 import org.jboss.netty.handler.codec.protobuf.ProtobufDecoder;
 import org.jboss.netty.handler.codec.protobuf.ProtobufEncoder;
-
+import org.jboss.netty.handler.timeout.IdleStateHandler;
+import org.jboss.netty.util.HashedWheelTimer;
 import com.orange.network.game.protocol.message.GameMessageProtos;
 
 public class FactimeChatServerPipelineFactory implements ChannelPipelineFactory {
-
+	
+	private HashedWheelTimer timer;
+	public FactimeChatServerPipelineFactory(HashedWheelTimer timer) {
+		this.timer = timer;
+	}
+	private static int EXPIRE_TIME_SECONDS = 300; // Modify this to set the idle time, we set to 300(s).
+	private static int READ_IDLE_TIME_SECONDS = EXPIRE_TIME_SECONDS; 
+	private static int WRITE_IDLE_TIME_SECONDS = 0; // Write idle time. Not used here.  
+	private static int ALL_IDLE_TIME_SECONDS = 0;   // Read/write idle time. Not used here. 
+	
 	@Override
 	public ChannelPipeline getPipeline() throws Exception {
 		ChannelPipeline p = Channels.pipeline();
+		
+		
 		p.addLast("frameDecoder", new LengthFieldBasedFrameDecoder(1048576, 0, 4, 0, 4));
 		p.addLast("protobufDecoder", new ProtobufDecoder(GameMessageProtos.GameMessage.getDefaultInstance()));
 		 
 		p.addLast("frameEncoder", new LengthFieldPrepender(4));
 		p.addLast("protobufEncoder", new ProtobufEncoder());
 		 
-		p.addLast("handler", new FacetimeChatServerHandler());
+		
+		p.addLast("handle", new FacetimeChatServerHandler());
+		
+		// For idle state handler
+		p.addLast("idleStatleHandler", new IdleStateHandler(timer, READ_IDLE_TIME_SECONDS,
+				WRITE_IDLE_TIME_SECONDS,ALL_IDLE_TIME_SECONDS));		
+ 		p.addLast("idleStateAwareChannelHandler", new FacetimeChatIdleStateHandler());
+		
 		return p;	
 	}
 

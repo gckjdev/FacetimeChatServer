@@ -1,22 +1,14 @@
 package com.orange.facetimechat.service;
 
-import java.util.Map;
-
-import org.apache.cassandra.thrift.Cassandra.set_keyspace_args;
 import org.apache.log4j.Logger;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelStateEvent;
-import org.omg.CORBA.PUBLIC_MEMBER;
-
 import com.orange.facetimechat.model.FacetimeUser;
 import com.orange.facetimechat.model.FacetimeUserManager;
 import com.orange.facetimechat.test.FacetimeTestService;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameCommandType;
-import com.orange.network.game.protocol.message.GameMessageProtos.FacetimeChatRequest;
 import com.orange.network.game.protocol.message.GameMessageProtos.FacetimeChatResponse;
 import com.orange.network.game.protocol.message.GameMessageProtos.GameMessage;
-import com.orange.network.game.protocol.model.GameBasicProtos.PBGameUser;
-import com.sun.corba.se.spi.ior.Writeable;
 
 public class ChatMatchService {
 
@@ -27,10 +19,6 @@ public class ChatMatchService {
 	// thread-safe singleton implementation
 	private static ChatMatchService defaultService = new ChatMatchService();
 
-	private ChatMatchService() {
-
-	}
-
 	public static ChatMatchService getInstance() {
 		return defaultService;
 	}
@@ -40,10 +28,6 @@ public class ChatMatchService {
 		user.setSentFacetimeResponse();
 	}
 	
-	private boolean getSentFacetimeResponse(FacetimeUser user) {
-		return user.getSentFacetimeResponse();
-	}
-
 	private void sendFacetimeResponse(FacetimeUser user,FacetimeUser matchedUser) {
 		// This synchronized block acts as a superviser, who
 		//  checks whether a response has sent. If yes,
@@ -73,6 +57,7 @@ public class ChatMatchService {
 			// After sending user a response, we should 
 			// set it's status, this two actions should
 			// be do as an atomic action.
+			// * Also use "user" as a lock~
 			synchronized (user) {
 				channel.write(message);
 				setSentFacetimeResponse(user);
@@ -97,30 +82,30 @@ public class ChatMatchService {
 		synchronized (this) {
 			userManager.addUser(user);
 			logger.info("<matchUserChatRequest>After adding: " + user + " is added to uerList,\n" + "now the userList is: " +
-				userManager.getUserList());
+				userManager.getUserInMap());
 		}
 		
 		matchedUser = userManager.findMatch(user);
 		if (matchedUser == null) {
 			logger
 					.info("<matchUserChatRequest> " + user +" not found a user, waiting...\n"
-					+ "the userList now is: " + userManager.getUserList());
+					+ "the userList now is: " + userManager.getUserInMap());
 			return;
 		}
 		logger
 				.info("<matchUserChatRequest> " + user + " found a match user： "
 						+ matchedUser + "\nthe userList now is: " 
-						+ userManager.getUserList());
+						+ userManager.getUserInMap());
 
 		// Choose who to initiate the chatting.By default we choose the user.
 		chooseOnetoInitiate(user, matchedUser);
 
 		// Here we have got a matched pair and decided who to initiate!
 		// Send a response respectively. We shall avoid
-		// sending one duplicate responses. Imagine this:
+		// sending each client duplicate responses. Imagine this:
 		// In A's thread, server sends A a response, 
 		// then in A's matchup B's thread, server sends A a response again!
-		//  So sendFacetimeResponse should be coded to  tackle this.
+		// So sendFacetimeResponse method should be carefully coded to  tackle this.
 			sendFacetimeResponse(user, matchedUser);
 			sendFacetimeResponse(matchedUser, user);
 	}
@@ -155,5 +140,5 @@ public class ChatMatchService {
 		userManager.removeUser(user);
 	}
 
-}// end of class
+}
 

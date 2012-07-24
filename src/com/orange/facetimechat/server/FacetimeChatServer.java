@@ -1,24 +1,27 @@
 package com.orange.facetimechat.server;
 
 import java.net.InetSocketAddress;
+import java.util.Timer;
 import java.util.concurrent.Executors;
 
 import org.apache.log4j.Logger;
 import org.jboss.netty.bootstrap.ServerBootstrap;
+import org.jboss.netty.channel.ChannelFactory;
+import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
+import org.jboss.netty.util.HashedWheelTimer;
 
 public class FacetimeChatServer {
 
 	private static final Logger logger = Logger.getLogger(FacetimeChatServer.class
 			.getName());
 	
-	
 	public static int getPort() {
 		String port = System.getProperty("server.port");
 		if (port != null && !port.isEmpty()){
 			return Integer.parseInt(port);
 		}
-		return 9800; // default
+		return 8191; // biggest Mersenne Prime Number among available port arrange(1024-65536): 2^13-1
 	}
 	
 //	public static final int LANGUAGE_CHINESE = 1;
@@ -35,14 +38,17 @@ public class FacetimeChatServer {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-				
+		
+		HashedWheelTimer timer = new HashedWheelTimer();
+		
 		ServerBootstrap bootstrap = new ServerBootstrap(
 				new NioServerSocketChannelFactory(
 					Executors.newCachedThreadPool(),
 					Executors.newCachedThreadPool()				
 				));
 		
-		bootstrap.setPipelineFactory(new FactimeChatServerPipelineFactory());
+		
+		bootstrap.setPipelineFactory(new FactimeChatServerPipelineFactory(timer));
 		
 		bootstrap.bind(new InetSocketAddress(getPort()));
 		logger.info("Start FaceTime Chat Server At Port "+getPort());
