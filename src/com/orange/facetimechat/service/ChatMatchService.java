@@ -56,8 +56,7 @@ public class ChatMatchService {
 		if (channel != null && channel.isWritable()) {
 			// After sending user a response, we should 
 			// set it's status, this two actions should
-			// be do as an atomic action.
-			// * Also use "user" as a lock~
+			// be do as an atomic operation.
 			synchronized (user) {
 				channel.write(message);
 				setSentFacetimeResponse(user);

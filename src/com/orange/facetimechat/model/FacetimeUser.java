@@ -10,9 +10,9 @@ import com.orange.network.game.protocol.model.GameBasicProtos.PBGameUser;
 
 public class FacetimeUser {
 
-	public final static int WAIT_MATCHING = 1;
-	public final static int MATCHED = 2;
-	public final static int START_CHATTING = 3;
+	public final static int WAIT_MATCHING = 1; // Wait for matching,the initial status.
+	public final static int MATCHED = 2;	// Found matchup, set this.
+	public final static int START_CHATTING = 3; // After sending Ftchat response, set this status.
 	
 	final PBGameUser user;
 	volatile long lastRequestTime;
@@ -56,9 +56,9 @@ public class FacetimeUser {
 	public synchronized boolean isMatched() {
 		// Actually the START_CHATTING *NEED NOT* check!
 		// Because when it is set to START_CHATTING, it will be
-		// removed from userList(See userStartFacetime() in ChatMatchService.java)
+		// removed from wating-for-match-queue(See userStartFacetime() in ChatMatchService.java)
 		// However we could not predict the thread's schedule, and 
-		// the Set-status-action and Remove-action are not atomic(it needn't)
+		// the Set-status-operation and Remove-operation are not atomic(it needn't be actually)
 		// So it is safe to check it. 
 		if (status == MATCHED || status == START_CHATTING)
 			return true;

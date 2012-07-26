@@ -8,7 +8,6 @@ import org.jboss.netty.handler.timeout.IdleStateEvent;
 
 import com.orange.facetimechat.model.FacetimeUser;
 import com.orange.facetimechat.model.FacetimeUserManager;
-import com.orange.game.model.manager.UserManager;
 
 
 // For idle state handle,
@@ -30,7 +29,7 @@ public class FacetimeChatIdleStateHandler extends IdleStateAwareChannelHandler {
 		   if (user.getStatus() != FacetimeUser.WAIT_MATCHING && user.isChosenToInitiate() == true)
 		   	{ 
 			   logger.info("<channelIdle>" + userManager.findUserByChannel(e.getChannel())
-					   + " idles too long time...~_~\n");
+					   + " idles for too long time...~_~\n");
 			   e.getChannel().close();
 		   	}
          }
