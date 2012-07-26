@@ -1,22 +1,22 @@
 package com.orange.facetimechat.test;
 
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import org.antlr.grammar.v3.ANTLRv3Parser.finallyClause_return;
-import org.apache.cassandra.cli.CliParser.newColumnFamily_return;
 import org.apache.log4j.Logger;
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
 
-import antlr.collections.List;
-
-class StartFacetimeChatTestClient {
+class StartFacetimeChatTestClient implements Runnable {
 	
 	
 	public StartFacetimeChatTestClient() {
+        }
+
+	@Override
+	public void run() {
 		// Parse options.
         String host = "127.0.0.1";
         int port = 8191;
@@ -37,7 +37,7 @@ class StartFacetimeChatTestClient {
         future.getChannel().getCloseFuture().awaitUninterruptibly();
         // Shut down thread pools to exit.
         bootstrap.releaseExternalResources();	
-        }
+	}
 }
 
 public class FacetimeChatTestClientThread extends Thread {
@@ -60,8 +60,11 @@ public class FacetimeChatTestClientThread extends Thread {
 		
 	public static void main(String[] args) {
 		
-		for (int i = 0; i < 5; i++)
-			new FacetimeChatTestClientThread();
-
+		ExecutorService executors = Executors.newFixedThreadPool(25);
+		
+		for (int i = 0; i < 300; i++){
+			executors.execute(new StartFacetimeChatTestClient());
+		}
+		
 	}
 }

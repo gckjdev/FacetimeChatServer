@@ -2,6 +2,7 @@ package com.orange.facetimechat.test;
 
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.antlr.grammar.v3.ANTLRv3Parser.id_return;
 import org.apache.cassandra.cli.CliParser.countStatement_return;
@@ -22,7 +23,10 @@ import com.orange.network.game.protocol.model.GameBasicProtos.PBGameUser;
 public class FacetimeTestService {
 
 	private static final Logger logger = Logger.getLogger(FacetimeTestService.class.getName());	
+	private static final AtomicInteger userIndex = new AtomicInteger(1);
+	
 	Channel channel;
+	String userId;
 	
 	public FacetimeTestService(){
 	}
@@ -31,11 +35,15 @@ public class FacetimeTestService {
 		this.channel = channel;
 	}
 	
+	public String getUserId(){
+		return userId;
+	}
+	
 	public void simulateMatchRequest(){
 		// send a user match request here
-		Random random = new Random();
+		userId = "test_user_"+ userIndex.getAndIncrement();
 		PBGameUser user = PBGameUser.newBuilder()
-			.setUserId("test_user_"+ random.nextInt(1000000))  // choose a big num to avoid collision
+			.setUserId(userId)  
 			.setGender(true)
 			.setNickName("Jian Yu")
 			.build();			
@@ -53,6 +61,8 @@ public class FacetimeTestService {
 		if (channel != null && channel.isWritable()){
 			channel.write(message);
 			logger.info("<simulateMatchRequest> send message="+message.toString());
+			
+			StatisticService.getInstance().addNewFacetime(user.getUserId());
 		}
 		else{
 			logger.info("<simulateMatchRequest> channel is null or not writable\n");

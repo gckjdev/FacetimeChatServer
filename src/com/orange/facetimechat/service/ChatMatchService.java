@@ -35,10 +35,10 @@ public class ChatMatchService {
 		// * Use the first argument(user) to sychronize,
 		// * so when server is deciding whether to sent A a response.
 		// * it won't do the sameting to A's matchup B, if B is scheduled. 
-		synchronized (user) {
+//		synchronized (user) {
 			if (user.getSentFacetimeResponse() == true)
 				return;
-		}
+//		}
 		
 		FacetimeChatResponse chatResponse = FacetimeChatResponse.newBuilder()
 				.addUser(matchedUser.getUser())
@@ -58,10 +58,10 @@ public class ChatMatchService {
 			// set it's status, this two actions should
 			// be do as an atomic action.
 			// * Also use "user" as a lock~
-			synchronized (user) {
-				channel.write(message);
+//			synchronized (user) {
 				setSentFacetimeResponse(user);
-			}
+				channel.write(message);
+//			}
 			logger.info("<sendFacetimeResponse> send message="
 					+ message.toString());
 		} else {
@@ -137,6 +137,9 @@ public class ChatMatchService {
 	// In case of user canceling the connection after applying for a chat.
 	public void cleanUserOnChannel(ChannelStateEvent e) {
 		FacetimeUser user = userManager.findUserByChannel(e.getChannel());
+		if (user == null)
+			return;
+		
 		userManager.removeUser(user);
 	}
 

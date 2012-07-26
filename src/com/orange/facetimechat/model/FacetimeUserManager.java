@@ -1,16 +1,14 @@
 package com.orange.facetimechat.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import org.antlr.grammar.v3.ANTLRv3Parser.finallyClause_return;
-import org.apache.cassandra.cli.CliParser.newColumnFamily_return;
-import org.apache.cassandra.cli.CliParser.username_return;
 import org.apache.log4j.Logger;
 import org.jboss.netty.channel.Channel;
 
@@ -19,8 +17,9 @@ public class FacetimeUserManager {
 	private static final Logger logger = Logger.getLogger(FacetimeUserManager.class.getName());
 	
 //	CopyOnWriteArrayList<FacetimeUser> userList = new CopyOnWriteArrayList<FacetimeUser>();
-	Map<String, FacetimeUser> userIdMap = new LinkedHashMap<String, FacetimeUser>();
-	Map<Channel, FacetimeUser> userChannelMap = new LinkedHashMap<Channel, FacetimeUser>();
+	
+	Map<String, FacetimeUser> userIdMap = new HashMap<String, FacetimeUser>();
+	Map<Channel, FacetimeUser> userChannelMap = new HashMap<Channel, FacetimeUser>();
 	
 	// thread-safe singleton implementation
 	private static FacetimeUserManager manager = new FacetimeUserManager();
@@ -38,20 +37,20 @@ public class FacetimeUserManager {
 		}
 	
 	synchronized public void removeUser(FacetimeUser user){
+			if (user == null || user.getUser() == null)
+				return;
+		
 			userIdMap.remove(user.getUser().getUserId());
 			userChannelMap.remove(user.getChannel());
 	}
 	
 	synchronized public FacetimeUser findMatch(FacetimeUser user) {
 		if (user.getStatus() == FacetimeUser.MATCHED) {
-//			logger.info(user.getUser().getUserId() + " 's status is:" + user.getStatus() ); 
-				return user.getMatchedUser();
+			return user.getMatchedUser();
 		}
-		else {
-			Iterator<Map.Entry<String, FacetimeUser>> iterator = userIdMap.entrySet().iterator();
-			while (iterator.hasNext())
-			{
-				FacetimeUser matchedUser = ((Map.Entry<String, FacetimeUser>)iterator.next()).getValue();
+		else {				
+			for (Map.Entry<String, FacetimeUser> entry : userIdMap.entrySet()){
+				FacetimeUser matchedUser = entry.getValue();
 				if (matchedUser != null && matchedUser.isMatched() == false &&
 					matchedUser.isMyself(user.getUser().getUserId()) == false ) 
 				{
