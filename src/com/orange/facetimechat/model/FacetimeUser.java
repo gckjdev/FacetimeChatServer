@@ -22,9 +22,9 @@ public class FacetimeUser {
 
 	// Granted to initiate the chatting? Default is false(No!).
 	// We should set it when send FacetimeChatresponse.
-	private boolean chosenToInitiate = false;
+	volatile private boolean chosenToInitiate = false;
 	// Has sent a response?
-	private boolean sentFacetimeResponse = false;
+	volatile private boolean sentFacetimeResponse = false;
 
 	public FacetimeUser(PBGameUser user, Channel channel) {
 		this.user = user;
@@ -34,7 +34,7 @@ public class FacetimeUser {
 	}
 	
 	public String toString() {
-		return "" + user.getUserId();
+		return user.getUserId();
 	}
 
 	public long getLastRequestTime() {
@@ -77,11 +77,11 @@ public class FacetimeUser {
 	}
 
 	// Two methods about setting the matched user.
-	public void setMatchedUser(FacetimeUser matchedUser) {
+	public synchronized void setMatchedUser(FacetimeUser matchedUser) {
 		this.matchedUser = matchedUser;
 	}
 
-	public FacetimeUser getMatchedUser() {
+	public synchronized FacetimeUser getMatchedUser() {
 		return matchedUser;
 	}
 

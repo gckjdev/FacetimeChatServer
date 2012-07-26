@@ -30,7 +30,7 @@ public class FacetimeChatServerHandler extends SimpleChannelUpstreamHandler  {
 			super.handleUpstream(ctx, e);
 		} catch (Exception exception) {
 			logger.error("<handleUpstream> catch unexpected exception at " + e.getChannel().toString()
-					+ ", cause=", exception.getCause());			
+					+ ", cause="+e.toString(), exception);			
 		}				
 	}
 	
