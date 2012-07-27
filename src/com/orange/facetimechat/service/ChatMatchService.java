@@ -49,7 +49,6 @@ public class ChatMatchService {
 				.addUser(matchedUser.getUser())
 				.setChosenToInitiate(user.isChosenToInitiate())
 				.build();
-		logger.info("<sendFacetimeResponse>matchedUser.getUser():"+matchedUser.getUser().toString());
 		
 		GameMessage message = GameMessage.newBuilder()
 				.setCommand(GameCommandType.FACETIME_CHAT_RESPONSE)
