@@ -44,15 +44,16 @@ public class FacetimeUserManager {
 			userChannelMap.remove(user.getChannel());
 	}
 	
-	synchronized public FacetimeUser findMatch(FacetimeUser user) {
+	synchronized public FacetimeUser findMatch(FacetimeUser user, boolean findByGender) {
 		if (user.getStatus() == FacetimeUser.MATCHED) {
 			return user.getMatchedUser();
 		}
 		else {				
 			for (Map.Entry<String, FacetimeUser> entry : userIdMap.entrySet()){
 				FacetimeUser matchedUser = entry.getValue();
-				if (matchedUser != null && matchedUser.isMatched() == false &&
-					matchedUser.isMyself(user.getUser().getUserId()) == false ) 
+				if (matchedUser.isMatched() == false &&
+					matchedUser.isMyself(user.getUser().getUserId()) == false &&
+					isGenderMatch(findByGender, user, matchedUser))
 				{
 					user.setStatus(FacetimeUser.MATCHED);
 					matchedUser.setStatus(FacetimeUser.MATCHED);
@@ -66,6 +67,14 @@ public class FacetimeUserManager {
 			}
 			return null;
 		}
+	}
+	
+	private boolean isGenderMatch(Boolean findByGender,FacetimeUser user,FacetimeUser matchedUser) {
+		if( findByGender == false ) 
+			return true;
+		else 
+			return  matchedUser.getUser().getGender() == user.getChatGender() && 
+			matchedUser.getChatGender() == user.getUser().getGender();
 	}
 	
 	synchronized public FacetimeUser findUserById(String userId) {

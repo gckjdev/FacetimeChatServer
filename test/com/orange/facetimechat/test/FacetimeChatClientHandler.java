@@ -32,8 +32,7 @@ public class FacetimeChatClientHandler extends SimpleChannelUpstreamHandler {
 			super.handleUpstream(ctx, e);
 		} catch (Exception exception) {
 			logger.error("<handleUpstream> catch unexpected exception at "
-					+ e.getChannel().toString() + ", cause=", exception
-					.getCause());
+					+ e.getChannel().toString() + ", cause="+exception.toString(),exception);
 		}
 	}
 
@@ -44,17 +43,14 @@ public class FacetimeChatClientHandler extends SimpleChannelUpstreamHandler {
 		logger.info("<messageReceiver> = " + message);
 		switch (message.getCommand()) {
 		case FACETIME_CHAT_RESPONSE:
-			
 			StatisticService.getInstance().addFacetimeMatch(testService.getUserId(), 
 					message.getFacetimeChatResponse().getUser(0).getUserId());
-			
 			if (message.getFacetimeChatResponse().getChosenToInitiate()) {
 				testService.simulateFacetimeStartRequest(message);
 			}
-
 			// disconnect to release the channel and complete the simulation
-			e.getChannel().disconnect();
-			e.getChannel().close();
+//			e.getChannel().disconnect();
+//			e.getChannel().close();
 			break;
 		}
 

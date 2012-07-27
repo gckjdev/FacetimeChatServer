@@ -1,5 +1,6 @@
 package com.orange.facetimechat.service;
 
+
 import org.apache.log4j.Logger;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelStateEvent;
@@ -18,6 +19,10 @@ public class ChatMatchService {
 
 	// thread-safe singleton implementation
 	private static ChatMatchService defaultService = new ChatMatchService();
+	// Supress default constructor for noninstantialiblity
+	private ChatMatchService() {
+		
+	}
 
 	public static ChatMatchService getInstance() {
 		return defaultService;
@@ -35,16 +40,17 @@ public class ChatMatchService {
 		// * Use the first argument(user) to sychronize,
 		// * so when server is deciding whether to sent A a response.
 		// * it won't do the sameting to A's matchup B, if B is scheduled. 
-//		synchronized (user) {
+		synchronized (user) {
 			if (user.getSentFacetimeResponse() == true)
 				return;
-//		}
+		}
 		
 		FacetimeChatResponse chatResponse = FacetimeChatResponse.newBuilder()
 				.addUser(matchedUser.getUser())
 				.setChosenToInitiate(user.isChosenToInitiate())
 				.build();
-
+		logger.info("<sendFacetimeResponse>matchedUser.getUser():"+matchedUser.getUser().toString());
+		
 		GameMessage message = GameMessage.newBuilder()
 				.setCommand(GameCommandType.FACETIME_CHAT_RESPONSE)
 				.setMessageId(1)
@@ -58,10 +64,10 @@ public class ChatMatchService {
 			// set it's status, this two actions should
 			// be do as an atomic action.
 			// * Also use "user" as a lock~
-//			synchronized (user) {
+			synchronized (user) {
 				setSentFacetimeResponse(user);
 				channel.write(message);
-//			}
+			}
 			logger.info("<sendFacetimeResponse> send message="
 					+ message.toString());
 		} else {
@@ -72,28 +78,25 @@ public class ChatMatchService {
 	
 
 	public void matchUserChatRequest(GameMessage message, Channel channel) {
-
+		
 		FacetimeUser user = new FacetimeUser(message.getFacetimeChatRequest()
-				.getUser(), channel);
+				.getUser(),message.getFacetimeChatRequest().getChatGender(), channel);
 		FacetimeUser matchedUser = null;
 		FacetimeUserManager userManager = FacetimeUserManager.getInstance();
-
-		// Add the user into userManager's userList and pick a user to match.
-		synchronized (this) {
-			userManager.addUser(user);
-			logger.info("<matchUserChatRequest>After adding: " + user + " is added to uerList,\n" + "now the userList is: " +
-				userManager.getUserInMap());
-		}
 		
-		matchedUser = userManager.findMatch(user);
+		boolean findByGender = false; 
+		if (message.getFacetimeChatRequest().hasChatGender()) 
+				findByGender = true;
+		
+		// Add the user into userManager's userList and pick a user to match.
+		userManager.addUser(user);
+		matchedUser = userManager.findMatch(user,findByGender);
 		if (matchedUser == null) {
-			logger
-					.info("<matchUserChatRequest> " + user +" not found a user, waiting...\n"
+			logger.info("<matchUserChatRequest> " + user +" not found a user, waiting...\n"
 					+ "the userList now is: " + userManager.getUserInMap());
 			return;
 		}
-		logger
-				.info("<matchUserChatRequest> " + user + " found a match user： "
+		logger.info("<matchUserChatRequest> " + user + " found a match user： "
 						+ matchedUser + "\nthe userList now is: " 
 						+ userManager.getUserInMap());
 
@@ -106,8 +109,9 @@ public class ChatMatchService {
 		// In A's thread, server sends A a response, 
 		// then in A's matchup B's thread, server sends A a response again!
 		// So sendFacetimeResponse method should be carefully coded to  tackle this.
-			sendFacetimeResponse(user, matchedUser);
-			sendFacetimeResponse(matchedUser, user);
+		sendFacetimeResponse(user, matchedUser);
+		sendFacetimeResponse(matchedUser, user);
+			
 	}
 
 
@@ -124,19 +128,16 @@ public class ChatMatchService {
 		FacetimeUser matchedUser = user.getMatchedUser();
 		user.setStatus(FacetimeUser.START_CHATTING);
 		matchedUser.setStatus(FacetimeUser.START_CHATTING);
-		
-		// We shall remove the user and the matchedUser from userList.
-		// Although we could not know the matchedUser's Facetime status,
-		// however since we have set both to START_CHATTING, it is useless to
-		// remain it on the userList,which is used to hold the chat-applying
-		// users.
+
+		// The pair start chatting, remove them from waiting-match queue(here is a map).
 		userManager.removeUser(user);
 		userManager.removeUser(matchedUser);
+
 	}
 
 	// In case of user canceling the connection after applying for a chat.
-	public void cleanUserOnChannel(ChannelStateEvent e) {
-		FacetimeUser user = userManager.findUserByChannel(e.getChannel());
+	public void cleanUserOnChannel(Channel channel) {
+		FacetimeUser user = userManager.findUserByChannel(channel);
 		if (user == null)
 			return;
 		

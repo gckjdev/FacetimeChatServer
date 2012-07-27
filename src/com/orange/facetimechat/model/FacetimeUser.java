@@ -15,6 +15,7 @@ public class FacetimeUser {
 	public final static int START_CHATTING = 3; // After sending Ftchat response, set this status.
 	
 	final PBGameUser user;
+	volatile boolean chatGender;
 	volatile long lastRequestTime;
 	volatile int status;
 	final Channel channel;
@@ -26,8 +27,9 @@ public class FacetimeUser {
 	// Has sent a response?
 	volatile private boolean sentFacetimeResponse = false;
 
-	public FacetimeUser(PBGameUser user, Channel channel) {
+	public FacetimeUser(PBGameUser user,Boolean chatGender,Channel channel) {
 		this.user = user;
+		this.chatGender = chatGender;
 		this.lastRequestTime = System.currentTimeMillis();
 		this.status = WAIT_MATCHING;
 		this.channel = channel;
@@ -51,6 +53,14 @@ public class FacetimeUser {
 
 	public PBGameUser getUser() {
 		return user;
+	}
+	
+	public boolean getChatGender() {
+		return chatGender;
+	}
+	
+	public boolean getUserGender() {
+		return user.getGender();
 	}
 
 	public synchronized boolean isMatched() {
@@ -102,7 +112,7 @@ public class FacetimeUser {
 		this.sentFacetimeResponse = true;
 	}
 
-	public boolean getSentFacetimeResponse() {
+	synchronized  public boolean getSentFacetimeResponse() {
 		return sentFacetimeResponse;
 	}
 

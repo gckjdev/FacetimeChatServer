@@ -6,13 +6,19 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.log4j.Logger;
 
+import com.orange.facetimechat.model.FacetimeUser;
+import com.orange.facetimechat.model.FacetimeUserManager;
+import com.orange.game.model.manager.UserManager;
+
 public class StatisticService {
 
 	private static final Logger logger = Logger.getLogger(StatisticService.class.getName());
 	private AtomicInteger doubleMatchCount = new AtomicInteger(0);
+	private FacetimeUserManager userManager = FacetimeUserManager.getInstance();
 	
 	// thread-safe singleton implementation
 	private static StatisticService defaultService = new StatisticService();
+	// Supress default constructor for noninstantiablity
 	private StatisticService(){
 		
 	}
@@ -39,8 +45,6 @@ public class StatisticService {
 					", matchUserId="+facetimeMatchUserList1.get(userId)+", try to add "+matchedUserId);
 			return;
 		}
-		
-		logger.info("[STATISTIC] add userId="+userId+", match user id="+matchedUserId);
 		facetimeMatchUserList1.put(userId, matchedUserId);
 		logger.info("[STATISTIC] match user map count="+ facetimeMatchUserList1.size() + ", map="+facetimeMatchUserList1.toString());
 //		facetimeMatchUserList2.put(matchedUserId, userId);		

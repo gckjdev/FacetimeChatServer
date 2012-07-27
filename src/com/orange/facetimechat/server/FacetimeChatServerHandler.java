@@ -1,5 +1,9 @@
 package com.orange.facetimechat.server;
 
+import java.nio.channels.Channel;
+
+import org.antlr.grammar.v3.ANTLRv3Parser.throwsSpec_return;
+import org.apache.cassandra.cli.CliParser.newColumnFamily_return;
 import org.apache.log4j.Logger;
 import org.jboss.netty.channel.ChannelEvent;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -22,6 +26,7 @@ public class FacetimeChatServerHandler extends SimpleChannelUpstreamHandler  {
 	public static FacetimeChatServerHandler getInstance() {
 		return facetimeChatServerHandler;
 	}
+	
 	@Override
 	public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e){
 		
@@ -30,7 +35,7 @@ public class FacetimeChatServerHandler extends SimpleChannelUpstreamHandler  {
 			super.handleUpstream(ctx, e);
 		} catch (Exception exception) {
 			logger.error("<handleUpstream> catch unexpected exception at " + e.getChannel().toString()
-					+ ", cause="+e.toString(), exception);			
+					+ ", cause="+exception.toString(),exception);			
 		}				
 	}
 	
@@ -38,16 +43,35 @@ public class FacetimeChatServerHandler extends SimpleChannelUpstreamHandler  {
 	public void messageReceived(ChannelHandlerContext ctx, MessageEvent e) {
 				
 		GameMessage message = (GameMessageProtos.GameMessage)e.getMessage();	
+		org.jboss.netty.channel.Channel channel = e.getChannel();
+		
+		try {
+			checkMessageValidity(channel,message);
+		} catch (NullPointerException exception) {
+			logger.error("<messageReceived> an unexpected FacetimeChatRequest received!"
+					+ "Close the channel !!!");
+			channel.close();
+		}
+		
 		logger.info("<messageReceived> " + message);
 		switch (message.getCommand()){
 			case FACETIME_CHAT_REQUEST:
-				ChatMatchService.getInstance().matchUserChatRequest(message, e.getChannel());
+				ChatMatchService.getInstance().matchUserChatRequest(message, channel);
 				break;
 			case FACETIME_CHAT_START:
 				ChatMatchService.getInstance().userStartFacetime(message);
 				break;
 		}		
 		
+	}
+	
+	private void checkMessageValidity(org.jboss.netty.channel.Channel channel,GameMessage message) 
+	throws NullPointerException 
+	{
+		
+		if (message.getFacetimeChatRequest() == null ||
+				message.getFacetimeChatRequest().getUser() == null)
+			throw new NullPointerException("<messageReceived> invalid message received!");
 	}
 	
 	@Override
@@ -59,7 +83,7 @@ public class FacetimeChatServerHandler extends SimpleChannelUpstreamHandler  {
 	@Override
 	public void channelDisconnected(ChannelHandlerContext ctx,
             ChannelStateEvent e){
-		chatMatchService.cleanUserOnChannel(e);
+		chatMatchService.cleanUserOnChannel(e.getChannel());
 		logger.info("<channelDisconnected> channel = " + e.getChannel().toString());
 	  	
 	}
@@ -68,7 +92,7 @@ public class FacetimeChatServerHandler extends SimpleChannelUpstreamHandler  {
 	public void channelClosed(ChannelHandlerContext ctx,
             ChannelStateEvent e){
 		// In case of user canceling the connection after aplying for a match.
-		chatMatchService.cleanUserOnChannel(e);
+		chatMatchService.cleanUserOnChannel(e.getChannel());
 		logger.info("<channelClosed> channel = " + e.getChannel().toString());
 	}
 	
