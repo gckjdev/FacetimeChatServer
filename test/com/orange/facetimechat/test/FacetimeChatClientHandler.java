@@ -1,6 +1,5 @@
 package com.orange.facetimechat.test;
 
-import org.apache.cassandra.cli.CliParser.countStatement_return;
 import org.apache.log4j.Logger;
 import org.jboss.netty.channel.ChannelEvent;
 import org.jboss.netty.channel.ChannelHandlerContext;

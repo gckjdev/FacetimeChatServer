@@ -21,16 +21,6 @@ public class FacetimeChatServer {
 		return 8191; // M13：2^13-1
 	}
 	
-//	public static final int LANGUAGE_CHINESE = 1;
-//	public static final int LANGUAGE_ENGLISH = 2;
-//	public static int getLanguage() {
-//		String lang = System.getProperty("config.lang");
-//		if (lang != null && !lang.isEmpty()){
-//			return Integer.parseInt(lang);
-//		}
-//		return LANGUAGE_CHINESE; // default
-//	}
-	
 	/**
 	 * @param args
 	 */

@@ -1,23 +1,12 @@
 package com.orange.facetimechat.model;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
-
-import org.apache.log4j.Logger;
 import org.jboss.netty.channel.Channel;
 
 
 public class FacetimeUserManager {
-	private static final Logger logger = Logger.getLogger(FacetimeUserManager.class.getName());
-	
-//	CopyOnWriteArrayList<FacetimeUser> userList = new CopyOnWriteArrayList<FacetimeUser>();
-	
 	Map<String, FacetimeUser> userIdMap = new HashMap<String, FacetimeUser>();
 	Map<Channel, FacetimeUser> userChannelMap = new HashMap<Channel, FacetimeUser>();
 	
@@ -44,7 +33,7 @@ public class FacetimeUserManager {
 			userChannelMap.remove(user.getChannel());
 	}
 	
-	synchronized public FacetimeUser findMatch(FacetimeUser user, boolean findByGender) {
+	synchronized public FacetimeUser findMatch(FacetimeUser user) {
 		if (user.getStatus() == FacetimeUser.MATCHED) {
 			return user.getMatchedUser();
 		}
@@ -53,7 +42,7 @@ public class FacetimeUserManager {
 				FacetimeUser matchedUser = entry.getValue();
 				if (matchedUser.isMatched() == false &&
 					matchedUser.isMyself(user.getUser().getUserId()) == false &&
-					isGenderMatch(findByGender, user, matchedUser))
+					isGenderMatched(user, matchedUser)== true)
 				{
 					user.setStatus(FacetimeUser.MATCHED);
 					matchedUser.setStatus(FacetimeUser.MATCHED);
@@ -69,12 +58,20 @@ public class FacetimeUserManager {
 		}
 	}
 	
-	private boolean isGenderMatch(Boolean findByGender,FacetimeUser user,FacetimeUser matchedUser) {
-		if( findByGender == false ) 
-			return true;
+	private boolean isGenderMatched(FacetimeUser user,FacetimeUser matchedUser) {
+		// Both are picky at gender,so they must match each other's request
+		if (user.isFindByGender() == true && matchedUser.isFindByGender() == true)
+			return (matchedUser.getUser().getGender() == user.getChatGender() && 
+			matchedUser.getChatGender() == user.getUser().getGender());
+		// A is picky, B is not, so the B will only be matched if his/her gender is what a wants.
+		else if (user.isFindByGender() == true && matchedUser.isFindByGender() == false)
+			return user.getChatGender() == matchedUser.getUser().getGender();
+		// Same as above condition.
+		else if (user.isFindByGender() == false && matchedUser.isFindByGender() == true)
+			return matchedUser.getChatGender() == user.getUser().getGender();
+		// Neither is picky at gender, just let them match.
 		else 
-			return  matchedUser.getUser().getGender() == user.getChatGender() && 
-			matchedUser.getChatGender() == user.getUser().getGender();
+			return true;
 	}
 	
 	synchronized public FacetimeUser findUserById(String userId) {
@@ -92,76 +89,14 @@ public class FacetimeUserManager {
 		
 		Iterator<Map.Entry<String, FacetimeUser>> iterator = userIdMap.entrySet().iterator();
 		while (iterator.hasNext()) {
+			FacetimeUser user = ((Map.Entry<String, FacetimeUser>)iterator.next()).getValue();
 			resultString = 
-				resultString + '\n' +((Map.Entry<String, FacetimeUser>)iterator.next() ).getValue().toString();
+				resultString + "\n" + user.toString()+"  \tgender:" + user.getUserGender() 
+				+ "  \tchatGender: "+ (user.isFindByGender()? user.getChatGender() : "None");
 		}
 		resultString += '\n';
 		
 		return resultString;
 	}
 
-	synchronized public void printMap(String func) {
-		
-		Iterator<Map.Entry<String, FacetimeUser>> iterator = userIdMap.entrySet().iterator();
-		logger.info("\n<" + func + ">The map's key/value are listed below:\n");
-		while (iterator.hasNext()) {
-			logger.info("key:" + ((Map.Entry<String, FacetimeUser>)iterator.next()).getKey()
-					+ " value:" + ((Map.Entry<String, FacetimeUser>)iterator.next()).getValue() + "\n");
-		}
-		
-	}
-	
-// * For userList version
-//	
-//synchronized public void addUser(FacetimeUser user){
-//	userList.add(user);
-//}
-//	
-//synchronized public void removeUser(FacetimeUser user) {
-//	userList.remove(user);
-//}
-//
-//synchronized public FacetimeUser findMatch(FacetimeUser user) {
-//	if (user.getStatus() == FacetimeUser.MATCHED)
-//		return user.getMatchedUser();
-//	else {
-//		for (FacetimeUser matchedUser : userList) {
-//	
-//			if (matchedUser.isMatched() == false &&
-//				matchedUser.isMyself(user.getUser().getUserId()) == false ) 
-//			{
-//					user.setStatus(FacetimeUser.MATCHED);
-//					matchedUser.setStatus(FacetimeUser.MATCHED);
-//					user.setMatchedUser(matchedUser);
-//					matchedUser.setMatchedUser(user);
-//	
-//					return matchedUser;
-//				}
-//			}
-//			return null;
-//		}
-//	}
-//
-//synchronized public FacetimeUser findUserById(String userId) {
-//  for (FacetimeUser user: userList) {
-//    	 if ( user.isMyself(userId))
-//    		 return user;
-//     }
-//	return null;
-//}
-//	
-//synchronized public FacetimeUser  findUserByChannel(Channel channel) {
-//	for (FacetimeUser user: userList) {
-//	if (user.getChannel() == channel)
-//		return user;
-//}
-//return null;
-//}
-//
-//	
-////For logger use, to help debug :)
-//public String getUserList() {
-//	return userList.toString();
-//}
-  
 }

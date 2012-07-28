@@ -1,18 +1,9 @@
 package com.orange.facetimechat.test;
 
-import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.antlr.grammar.v3.ANTLRv3Parser.id_return;
-import org.apache.cassandra.cli.CliParser.countStatement_return;
-import org.apache.cassandra.cli.CliParser.newColumnFamily_return;
-import org.apache.cassandra.thrift.Cassandra.set_keyspace_args;
 import org.apache.log4j.Logger;
 import org.jboss.netty.channel.Channel;
-import org.omg.CORBA.PUBLIC_MEMBER;
-
-import com.orange.facetimechat.model.FacetimeUser;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameCommandType;
 import com.orange.network.game.protocol.message.GameMessageProtos.FacetimeChatRequest;
 import com.orange.network.game.protocol.message.GameMessageProtos.GameMessage;
@@ -48,13 +39,11 @@ public class FacetimeTestService {
 			StatisticService.getInstance().addNewFacetime(message.getFacetimeChatRequest().getUser().getUserId());
 		}
 		else{
-			logger.info("<simulateMatchRequest> channel is null or not writable\n");
+			logger.info("<simulateMatchRequest> channel is null or not writable");
 		}
 	}
 
 	private GameMessage makeMatchRequest() {
-		
-		// send a user match request here
 		Random random = new Random();
 		boolean gender = random.nextBoolean();
 		String nickName =  gender == true? "Male_"+userIndex.toString():"Female_" +userIndex.toString();
@@ -66,10 +55,17 @@ public class FacetimeTestService {
 			.setNickName(nickName)
 			.build();			
 		
-		FacetimeChatRequest chatRequest = FacetimeChatRequest.newBuilder()
-			.setUser(user)
-//			.setChatGender(random.nextBoolean())
-			.build();
+			FacetimeChatRequest chatRequest = null;
+			if (random.nextBoolean()) {
+				chatRequest = FacetimeChatRequest.newBuilder()
+				.setUser(user)
+				.setChatGender(random.nextBoolean())
+				.build();
+			} else {
+				chatRequest = FacetimeChatRequest.newBuilder()
+				.setUser(user)
+				.build();
+			}
 		
 		GameMessage message = GameMessage.newBuilder()
 			.setCommand(GameCommandType.FACETIME_CHAT_REQUEST)

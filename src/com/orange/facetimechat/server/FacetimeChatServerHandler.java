@@ -1,9 +1,5 @@
 package com.orange.facetimechat.server;
 
-import java.nio.channels.Channel;
-
-import org.antlr.grammar.v3.ANTLRv3Parser.throwsSpec_return;
-import org.apache.cassandra.cli.CliParser.newColumnFamily_return;
 import org.apache.log4j.Logger;
 import org.jboss.netty.channel.ChannelEvent;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -45,6 +41,8 @@ public class FacetimeChatServerHandler extends SimpleChannelUpstreamHandler  {
 		GameMessage message = (GameMessageProtos.GameMessage)e.getMessage();	
 		org.jboss.netty.channel.Channel channel = e.getChannel();
 		
+		// In case malicious or buggy client sends empty FacetimeChatRequest or empty PBGameUser,
+		// which is not what we want. Just close the the channel.
 		try {
 			checkMessageValidity(channel,message);
 		} catch (NullPointerException exception) {

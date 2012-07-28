@@ -3,7 +3,6 @@ package com.orange.facetimechat.service;
 
 import org.apache.log4j.Logger;
 import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelStateEvent;
 import com.orange.facetimechat.model.FacetimeUser;
 import com.orange.facetimechat.model.FacetimeUserManager;
 import com.orange.facetimechat.test.FacetimeTestService;
@@ -13,10 +12,10 @@ import com.orange.network.game.protocol.message.GameMessageProtos.GameMessage;
 
 public class ChatMatchService {
 
-	final FacetimeUserManager userManager = FacetimeUserManager.getInstance();
+	private final FacetimeUserManager userManager = FacetimeUserManager.getInstance();
 	private static final Logger logger = Logger
 			.getLogger(FacetimeTestService.class.getName());
-
+	
 	// thread-safe singleton implementation
 	private static ChatMatchService defaultService = new ChatMatchService();
 	// Supress default constructor for noninstantialiblity
@@ -28,6 +27,41 @@ public class ChatMatchService {
 		return defaultService;
 	}
 	
+	
+public void matchUserChatRequest(GameMessage message, Channel channel) {
+		
+		FacetimeUser user = new FacetimeUser.Builder(message.getFacetimeChatRequest().getUser(), channel)
+										.setChatGender(message)
+										.build();
+		
+		FacetimeUser matchedUser = null;
+		FacetimeUserManager userManager = FacetimeUserManager.getInstance();
+		
+		// Add the user into userManager's userList and pick a user to match.
+		userManager.addUser(user);
+		matchedUser = userManager.findMatch(user);
+		
+		if (matchedUser == null) {
+			logger.info("<matchUserChatRequest> " + user +" not found a user, waiting...\n");
+//					+ "the userList now is: " + userManager.getUserInMap());
+			return;
+		}
+		logger.info("<matchUserChatRequest> " + user + " found a match user： "+ matchedUser); 
+//				+ "\nthe userList now is: " + userManager.getUserInMap());
+
+		// Choose who to initiate the chatting.By default we choose the user.
+		chooseOnetoInitiate(user, matchedUser);
+
+		// Here we have got a matched pair and decided who to initiate!
+		// Send a response respectively. We shall avoid
+		// sending each client duplicate responses. Imagine this:
+		// In A's thread, server sends A a response, 
+		// then in A's matchup B's thread, server sends A a response again!
+		// So sendFacetimeResponse method should be carefully coded to  tackle this.
+		sendFacetimeResponse(user, matchedUser);
+		sendFacetimeResponse(matchedUser, user);
+		
+	}
 	
 	private void setSentFacetimeResponse(FacetimeUser user) {
 		user.setSentFacetimeResponse();
@@ -49,7 +83,6 @@ public class ChatMatchService {
 				.addUser(matchedUser.getUser())
 				.setChosenToInitiate(user.isChosenToInitiate())
 				.build();
-		logger.info("<sendFacetimeResponse>matchedUser.getUser():"+matchedUser.getUser().toString());
 		
 		GameMessage message = GameMessage.newBuilder()
 				.setCommand(GameCommandType.FACETIME_CHAT_RESPONSE)
@@ -77,42 +110,7 @@ public class ChatMatchService {
 	}
 	
 
-	public void matchUserChatRequest(GameMessage message, Channel channel) {
-		
-		FacetimeUser user = new FacetimeUser(message.getFacetimeChatRequest()
-				.getUser(),message.getFacetimeChatRequest().getChatGender(), channel);
-		FacetimeUser matchedUser = null;
-		FacetimeUserManager userManager = FacetimeUserManager.getInstance();
-		
-		boolean findByGender = false; 
-		if (message.getFacetimeChatRequest().hasChatGender()) 
-				findByGender = true;
-		
-		// Add the user into userManager's userList and pick a user to match.
-		userManager.addUser(user);
-		matchedUser = userManager.findMatch(user,findByGender);
-		if (matchedUser == null) {
-			logger.info("<matchUserChatRequest> " + user +" not found a user, waiting...\n"
-					+ "the userList now is: " + userManager.getUserInMap());
-			return;
-		}
-		logger.info("<matchUserChatRequest> " + user + " found a match user： "
-						+ matchedUser + "\nthe userList now is: " 
-						+ userManager.getUserInMap());
-
-		// Choose who to initiate the chatting.By default we choose the user.
-		chooseOnetoInitiate(user, matchedUser);
-
-		// Here we have got a matched pair and decided who to initiate!
-		// Send a response respectively. We shall avoid
-		// sending each client duplicate responses. Imagine this:
-		// In A's thread, server sends A a response, 
-		// then in A's matchup B's thread, server sends A a response again!
-		// So sendFacetimeResponse method should be carefully coded to  tackle this.
-		sendFacetimeResponse(user, matchedUser);
-		sendFacetimeResponse(matchedUser, user);
-			
-	}
+	
 
 
 	private void chooseOnetoInitiate(FacetimeUser user, FacetimeUser matchedUser) {
@@ -128,10 +126,16 @@ public class ChatMatchService {
 		FacetimeUser matchedUser = user.getMatchedUser();
 		user.setStatus(FacetimeUser.START_CHATTING);
 		matchedUser.setStatus(FacetimeUser.START_CHATTING);
-
+		
+		logger.info("<userStartFacetime> Before removing user and matchedUser from map!"
+				+ userManager.getUserInMap());
+		
 		// The pair start chatting, remove them from waiting-match queue(here is a map).
 		userManager.removeUser(user);
 		userManager.removeUser(matchedUser);
+		
+		logger.info("<userStartFacetime> After removing user and matchedUser from map!"
+				+ userManager.getUserInMap());
 
 	}
 
