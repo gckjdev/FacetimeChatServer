@@ -1,18 +1,9 @@
 package com.orange.facetimechat.test;
 
-import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import org.antlr.grammar.v3.ANTLRv3Parser.id_return;
-import org.apache.cassandra.cli.CliParser.countStatement_return;
-import org.apache.cassandra.cli.CliParser.newColumnFamily_return;
-import org.apache.cassandra.thrift.Cassandra.set_keyspace_args;
 import org.apache.log4j.Logger;
 import org.jboss.netty.channel.Channel;
-import org.omg.CORBA.PUBLIC_MEMBER;
-
-import com.orange.facetimechat.model.FacetimeUser;
 import com.orange.network.game.protocol.constants.GameConstantsProtos.GameCommandType;
 import com.orange.network.game.protocol.message.GameMessageProtos.FacetimeChatRequest;
 import com.orange.network.game.protocol.message.GameMessageProtos.GameMessage;
@@ -40,17 +31,41 @@ public class FacetimeTestService {
 	}
 	
 	public void simulateMatchRequest(){
-		// send a user match request here
-		userId = "test_user_"+ userIndex.getAndIncrement();
+		GameMessage message = makeMatchRequest();
+		if (channel != null && channel.isWritable()){
+			channel.write(message);
+			logger.info("<simulateMatchRequest> send message="+message.toString());
+			
+			StatisticService.getInstance().addNewFacetime(message.getFacetimeChatRequest().getUser().getUserId());
+		}
+		else{
+			logger.info("<simulateMatchRequest> channel is null or not writable");
+		}
+	}
+
+	private GameMessage makeMatchRequest() {
+		Random random = new Random();
+		boolean gender = random.nextBoolean();
+		String nickName =  gender == true? "Male_"+userIndex.toString():"Female_" +userIndex.toString();
+		userId = "test_user_"+ userIndex.getAndIncrement();//random.nextInt(1000000);
 		PBGameUser user = PBGameUser.newBuilder()
 			.setUserId(userId)  
-			.setGender(true)
-			.setNickName("Jian Yu")
+			.setGender(gender)
+			.setAvatar("http://pic1a.nipic.com/2008-09-02/20089210324895_2.jpg")
+			.setNickName(nickName)
 			.build();			
 		
-		FacetimeChatRequest chatRequest = FacetimeChatRequest.newBuilder()
-			.setUser(user)
-			.build();
+			FacetimeChatRequest chatRequest = null;
+			if (random.nextBoolean()) {
+				chatRequest = FacetimeChatRequest.newBuilder()
+				.setUser(user)
+				.setChatGender(random.nextBoolean())
+				.build();
+			} else {
+				chatRequest = FacetimeChatRequest.newBuilder()
+				.setUser(user)
+				.build();
+			}
 		
 		GameMessage message = GameMessage.newBuilder()
 			.setCommand(GameCommandType.FACETIME_CHAT_REQUEST)
@@ -58,20 +73,9 @@ public class FacetimeTestService {
 			.setFacetimeChatRequest(chatRequest)
 			.build();
 		
-		if (channel != null && channel.isWritable()){
-			channel.write(message);
-			logger.info("<simulateMatchRequest> send message="+message.toString());
-			
-			StatisticService.getInstance().addNewFacetime(user.getUserId());
-		}
-		else{
-			logger.info("<simulateMatchRequest> channel is null or not writable\n");
-//					+ "Channel isBound: " + channel.isBound() + '\n'
-//					+ "channel isConnected: " + channel.isConnected() +'\n'
-//					+ "channel is isOpen: " + channel.isOpen());
-		}
+		return message;
+		
 	}
-
 	
 
 	public void simulateFacetimeStartRequest(GameMessage message){
