@@ -77,7 +77,7 @@ public class ChatMatchService {
 				.getUser(), channel);
 		FacetimeUser matchedUser = null;
 		FacetimeUserManager userManager = FacetimeUserManager.getInstance();
-
+		
 		// Add the user into userManager's userList and pick a user to match.
 		synchronized (this) {
 			userManager.addUser(user);
