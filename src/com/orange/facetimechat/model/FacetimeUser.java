@@ -56,7 +56,9 @@ public class FacetimeUser {
 			}
 			else {
 				this.findByGender = false;
-				this.chatGender = false; // It won't be used. set it to false by convention.
+				this.chatGender = false; // Since findByGender is false, it won't be used. 
+												 // Set it to false by convention.Setting it to
+												 //  whaterver value is sort of style-.-. Just ignore it!
 			}
 			
 			return this;
@@ -65,7 +67,7 @@ public class FacetimeUser {
 		public FacetimeUser build() {
 			return new FacetimeUser(this);
 		}
-	}
+	} // end of inner class
 	
 	private FacetimeUser(Builder builder) {
 		user = builder.user;

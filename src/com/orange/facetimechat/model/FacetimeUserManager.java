@@ -1,7 +1,6 @@
 package com.orange.facetimechat.model;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import org.jboss.netty.channel.Channel;
 
@@ -85,18 +84,22 @@ public class FacetimeUserManager {
 	}
 	
 	synchronized public String getUserInMap() {
-		String resultString="";
-		
-		Iterator<Map.Entry<String, FacetimeUser>> iterator = userIdMap.entrySet().iterator();
-		while (iterator.hasNext()) {
-			FacetimeUser user = ((Map.Entry<String, FacetimeUser>)iterator.next()).getValue();
-			resultString = 
-				resultString + "\n" + user.toString()+"  \tgender:" + user.getUserGender() 
-				+ "  \tchatGender: "+ (user.isFindByGender()? user.getChatGender() : "None");
+		// There is a circle,so we explictly use StringBuilder
+		// to improve the String building performance.
+		// (see Thinking in Java[edition 4]. Ch13)
+		StringBuilder result = new StringBuilder("\n");
+		for (Map.Entry<String, FacetimeUser> entry : userIdMap.entrySet()) {
+			FacetimeUser user = entry.getValue();
+			result.append(user);
+			result.append("  \tgender:");
+			result.append(user.getUserGender());
+			result.append("  \tchatgender:");
+			result.append((user.isFindByGender()? user.getChatGender() : "None"));
+			result.append("\n");
 		}
-		resultString += '\n';
 		
-		return resultString;
+		return result.toString();
+	
 	}
 
 }
