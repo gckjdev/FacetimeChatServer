@@ -104,8 +104,7 @@ public void matchUserChatRequest(GameMessage message, Channel channel) {
 			logger.info("<sendFacetimeResponse> send message="
 					+ message.toString());
 		} else {
-			logger
-					.info("<sendFacetimeResponse> channel is null or not writable");
+			logger.info("<sendFacetimeResponse> channel is null or not writable");
 		}
 	}
 	

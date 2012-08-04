@@ -41,15 +41,15 @@ public class FacetimeChatClientHandler extends SimpleChannelUpstreamHandler {
 		GameMessage message = (GameMessageProtos.GameMessage) e.getMessage();
 		logger.info("<messageReceiver> = " + message);
 		switch (message.getCommand()) {
-		case FACETIME_CHAT_RESPONSE:
-			StatisticService.getInstance().addFacetimeMatch(testService.getUserId(), 
+			case FACETIME_CHAT_RESPONSE:
+				StatisticService.getInstance().addFacetimeMatch(testService.getUserId(), 
 					message.getFacetimeChatResponse().getUser(0).getUserId());
-			if (message.getFacetimeChatResponse().getChosenToInitiate()) {
-				testService.simulateFacetimeStartRequest(message);
-			}
-			// disconnect to release the channel and complete the simulation
-//			e.getChannel().disconnect();
-//			e.getChannel().close();
+				if (message.getFacetimeChatResponse().getChosenToInitiate()) {
+					testService.simulateFacetimeStartRequest(message);
+				}
+				// disconnect to release the channel and complete the simulation
+//				e.getChannel().disconnect();
+//				e.getChannel().close();
 			break;
 		}
 

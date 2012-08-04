@@ -61,7 +61,7 @@ public class FacetimeChatTestClientThread extends Thread {
 	public static void main(String[] args) {
 		
 		ExecutorService executors = Executors.newFixedThreadPool(400);
-		for (int i = 0; i < 100; i++){
+		for (int i = 0; i < 200; i++){
 			executors.execute(new StartFacetimeChatTestClient());
 		}
 		

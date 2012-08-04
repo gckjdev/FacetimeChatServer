@@ -83,7 +83,7 @@ public class FacetimeUserManager {
 		return user;
 	}
 	
-	synchronized public String getUserInMap() {
+	public String getUserInMap() {
 		// There is a circle,so we explictly use StringBuilder
 		// to improve the String building performance.
 		// (see Thinking in Java[edition 4]. Ch13)

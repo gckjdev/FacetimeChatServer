@@ -57,7 +57,7 @@ public class FacetimeUser {
 			else {
 				this.findByGender = false;
 				this.chatGender = false; // Since findByGender is false, it won't be used. 
-												 // Set it to false by convention.Setting it to
+												 // Set it to false by convention.But Setting it to
 												 //  whaterver value is sort of style-.-. Just ignore it!
 			}
 			
