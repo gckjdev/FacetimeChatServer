@@ -36,10 +36,16 @@ public class FactimeChatServerPipelineFactory implements ChannelPipelineFactory 
 		
 		p.addLast("handle", new FacetimeChatServerHandler());
 		
-		// For idle state handler
-		p.addLast("idleStatleHandler", new IdleStateHandler(timer, READ_IDLE_TIME_SECONDS,
+		/** For idle state handler
+		 * 
+		 * idleStateHandler handles an idle event(read idle, write idle, or both),
+		 * and triggers an idleStateEvent,
+		 * which is then handled by idleStateChannelHandler, we can do any 
+		 * cleanup there .
+		 */
+		p.addLast("idleStateHandler", new IdleStateHandler(timer, READ_IDLE_TIME_SECONDS,
 				WRITE_IDLE_TIME_SECONDS,ALL_IDLE_TIME_SECONDS));		
- 		p.addLast("idleStateAwareChannelHandler", new FacetimeChatIdleStateHandler());
+ 		p.addLast("idleStateChannelHandler", new FacetimeChatIdleStateChannelHandler());
 		
 		return p;	
 	}

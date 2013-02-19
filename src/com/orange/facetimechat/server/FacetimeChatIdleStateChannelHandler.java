@@ -14,9 +14,9 @@ import com.orange.facetimechat.model.FacetimeUserManager;
 // If the client keep silent for 300 seconds since the channel connected
 // (the server side readerIdleTime event triggerd), then we should just 
 // close the channel.
-public class FacetimeChatIdleStateHandler extends IdleStateAwareChannelHandler {
+public class FacetimeChatIdleStateChannelHandler extends IdleStateAwareChannelHandler {
 	
-	private static final Logger logger = Logger.getLogger(FacetimeChatIdleStateHandler.class
+	private static final Logger logger = Logger.getLogger(FacetimeChatIdleStateChannelHandler.class
 			.getName()); 
 	FacetimeUserManager userManager = FacetimeUserManager.getInstance();
 	
